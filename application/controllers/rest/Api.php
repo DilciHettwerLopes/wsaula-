@@ -1,84 +1,109 @@
 <?php
-    
-defined('BASEPATH') OR exit('No direct script access allowed');
+
+defined('BASEPATH') or exit('No direct script access allowed');
 
 use chriskacerguis\RestServer\RestController;
 
-class Api extends RestController {
+class Api extends RestController
+{
 
-    // o nome do metodo sempre vem acompanhado do tipo de requisição
-    // ou seja, contato_get significa que é uma requisição do tipo "GET"
-   // e o usuario vai requisitar apenas  /rest/api/contato
-    public function contato_get(){
-        $retorno =[
-            'status' =>true,
-            'nome'  => 'Dilci',
-            'email' => 'dilcylopes@gmail.com',
-            'error' => ''
-        ];
-
-        // para enviar uma resposta, a gente chama o response 
-        // passando dois parametros: o corpo da resposta e o codigo de status
-        $this->response( $retorno, 200 );
-    }
-
-    public function contato_post(){
-        $retorno =  [
-        'status' =>true,
-            'nome'  => 'Dilci POST',
-            'email' => 'teste@gmail.com',
-            'error' => ''
-        ];
-        $this->response( $retorno, 201);
-    }
-
-
-    public function usuario_get(){ // sempre fica nulo nos parenteses
+    public function turma_get()
+    { // sempre fica nulo nos parenteses
         //o primeiro parametro do load é o nome do model que queremos chamar
-        //o segundo paramentro"um" é um 'apelido' o qual pode ser usado depois
-        $this->load->model('usuario_model','um');
+        //o segundo paramentro"tm" é tm 'apelido' o qual pode ser usado depois
+        $this->load->model('turma_model', 'tm');
 
         $id = $this->get('id');
-        if ($id > 0){
-        $retorno = $this->um->get_one($id);  // get de um usuario
+        if ($id > 0) {
+            $retorno = $this->tm->get_one($id);  // get de tm usuario
         } else {
-            $retorno = $this->um->get_all();
+            $retorno = $this->tm->get_all();
         }
 
-         $this->response($retorno, (($retorno)? 200 : 400));
+        $this->response($retorno, (($retorno) ? 200 : 400));
     }
 
-    public function usuario_post(){
-        if((!$this->post('email')) || (!$this->post('senha'))){
+    public function turma_post()
+    {
+        if ((!$this->post('aluno')) || (!$this->post('nota'))) {
             $this->response([
                 'status' => false,
-                'error' =>'Campos obrigatórios não preenchidos'
+                'error' => 'Campos obrigatórios não preenchidos'
             ], 400);
             return;
         }
 
-
         $dados = [
-            'email' => $this -> post('email'),
-            'senha' => $this -> post('senha')
+            'aluno' => $this->post('aluno'),
+            'nota' => $this->post('nota')
         ];
 
         //carregamos o model
-        $this->load->model('usuario_model', 'um');
+        $this->load->model('turma_model', 'tm');
         //mandamos inserir na base através do metodo insert do usuario__model
-        if($this->um->insert($dados)){
+        if ($this->tm->insert($dados)) {
             $this->response([
                 'status' => true,
-                'mensage' => 'Usuario inserido com sucesso'
+                'mensage' => 'Nota inserida com sucesso'
             ], 200); // 200 ok
 
-        } else{
+        } else {
             $this->response([
                 'status' => false,
-                'error'  => 'Falha ao inserir usuario'
+                'error'  => 'Falha ao inserir a nota'
             ], 400); //400 bad request
 
         }
+    }
+    
+    public function turma_delete() {
+
+        $id = $this->get('id'); // pode ser atraves de post tambem
         
-      }
+        $this->load->model('turma_model', 'tm');
+        if ($this->tm->delete($id)) {
+            $this->response([
+                'status' => true,
+                'mensage' => 'Nota inserida com sucesso'
+            ], 200); // 200 ok
+        } else {
+            $this->response([
+                'status' => false,
+                'error'  => 'Falha ao inserir a nota'
+            ], 400); //400 bad request
+        }
+    }
+
+    public function turma_put()
+    {
+        $id = $this->get('id'); // pode ser atraves de post tambem
+        if ((!$this->put('aluno')) || (!$this->put('nota')) || $id <= 0) {
+            $this->response([
+                'status' => false,
+                'error' => 'Campos obrigatórios não preenchidos'
+            ], 400);
+            return;
+        }
+
+        $dados = [
+            'aluno' => $this->put('aluno'),
+            'nota' => $this->put('nota')
+        ];
+
+        //carregamos o model
+        $this->load->model('turma_model', 'tm');
+        if ($this->tm->update($id, $dados)) {
+            $this->response([
+                'status' => true,
+                'mensage' => 'Nota inserida com sucesso'
+            ], 200); // 200 ok
+
+        } else {
+            $this->response([
+                'status' => false,
+                'error'  => 'Falha ao inserir a nota'
+            ], 400); //400 bad request
+
+        }
+    }
 }
